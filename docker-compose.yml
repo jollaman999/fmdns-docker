@@ -1,0 +1,38 @@
+version: '2'
+services:
+  mysql:
+    image: mysql:5.7
+    environment:
+      - MYSQL_ALLOW_EMPTY_PASSWORD=1
+      - MYSQL_DATABASE=facileManager
+    ports:
+      - 3308:3306
+    volumes:
+      - mysql:/var/lib/mysql
+
+  dns1:
+    build:
+      context: .
+      dockerfile: Dockerfile-bind
+    hostname: dns1
+    environment:
+      - FACILE_MANAGER_HOST=fmdns/
+      - FACILE_CLIENT_SERIAL_NUMBER=1000
+    volumes:
+      - ./bind9/entrypoint.sh:/entrypoint.sh
+
+  fmdns:
+    build:
+      context: .
+      dockerfile: Dockerfile-fmdns
+    environment:
+      - MYSQL_HOST=mysql
+    ports:
+      - 8080:80
+    links:
+      - mysql
+      - dns1
+
+volumes:
+  bind-data:
+  mysql:

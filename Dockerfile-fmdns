@@ -10,8 +10,7 @@ RUN	apt-get update \
 
 RUN ln -s /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/libldap.so \
 	&& docker-php-ext-install mysql mysqli ldap \
-	&& a2enmod rewrite
+	&& a2enmod rewrite dump_io
 
-COPY config.inc.php /var/www/html/
-COPY info.php /var/www/html/
+COPY fmdns/config.inc.php /var/www/html/
 COPY php.ini /usr/local/etc/php/php.ini
