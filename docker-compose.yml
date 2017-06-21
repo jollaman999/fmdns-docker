@@ -34,5 +34,4 @@ services:
       - dns1
 
 volumes:
-  bind-data:
   mysql:
