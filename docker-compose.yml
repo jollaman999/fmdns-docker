@@ -1,37 +1,68 @@
 version: '2'
 services:
-  mysql:
-    image: mysql:5.7
-    environment:
-      - MYSQL_ALLOW_EMPTY_PASSWORD=1
-      - MYSQL_DATABASE=facileManager
-    ports:
-      - 3308:3306
-    volumes:
-      - mysql:/var/lib/mysql
 
-  dns1:
+  facilemanager:
     build:
       context: .
-      dockerfile: Dockerfile-bind
-    hostname: dns1
+      dockerfile: ./build-facilemanager/Dockerfile
+    hostname: ${fm_URL}
+    container_name: facilemanager
+    networks:
+      - frontend
+      - backend
+    ports:
+      - 80:80
+      - 443:443
+    stop_grace_period: 1m
+    restart: unless-stopped
     environment:
-      - FACILE_MANAGER_HOST=fmdns/
-      - FACILE_CLIENT_SERIAL_NUMBER=1000
+      MYSQL_HOST: "mysql"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+    links:
+      - mysql
+
+  mysql:
+    image: mysql:5.7
+    hostname: mysql
+    container_name: mysql
+    networks:
+      - backend
     volumes:
-      - ./bind9/entrypoint.sh:/entrypoint.sh
+      - ./mysql-data:/var/lib/mysql
+    #ports:
+    #  - 3306:3306
+    stop_grace_period: 1m
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USER}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+
 
   fmdns:
     build:
       context: .
-      dockerfile: Dockerfile-fmdns
-    environment:
-      - MYSQL_HOST=mysql
+      dockerfile: ./build-fmdns/Dockerfile
+    hostname: ${fmDNS_URL}
+    container_name: fmdns
+    networks:
+      - frontend
+    #volumes:
+    #  - ./fmdns-log:/var/log/bind
     ports:
-      - 8080:80
-    links:
-      - mysql
-      - dns1
+      - ${HOST_IP}:53:53/udp
+      - ${HOST_IP}:53:53/tcp
+    #  - 8053:80
+    stop_grace_period: 1m
+    restart: unless-stopped
+    environment:
+      TZ: "America/Chicago"
+      FACILE_MANAGER_HOST: ${fmDNS_Manager}
+      FACILE_CLIENT_SERIAL_NUMBER: ${fmDNS_Serial}
 
-volumes:
-  mysql:
+networks:
+    frontend:
+    backend:
