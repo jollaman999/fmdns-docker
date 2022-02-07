@@ -10,6 +10,9 @@ services:
     networks:
       - frontend
       - backend
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
     ports:
       - 80:80
       - 443:443
@@ -30,6 +33,8 @@ services:
     networks:
       - backend
     volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
       - ./mysql-data:/var/lib/mysql
     #ports:
     #  - 3306:3306
@@ -50,7 +55,9 @@ services:
     container_name: fmdns
     networks:
       - frontend
-    #volumes:
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
     #  - ./fmdns-log:/var/log/bind
     ports:
       - ${HOST_IP}:53:53/udp
@@ -59,7 +66,6 @@ services:
     stop_grace_period: 1m
     restart: unless-stopped
     environment:
-      TZ: "America/Chicago"
       FACILE_MANAGER_HOST: ${fmDNS_Manager}
       FACILE_CLIENT_SERIAL_NUMBER: ${fmDNS_Serial}
 
