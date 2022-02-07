@@ -58,7 +58,7 @@ services:
     volumes:
       - "/etc/timezone:/etc/timezone:ro"
       - "/etc/localtime:/etc/localtime:ro"
-    #  - ./fmdns-log:/var/log/bind
+      - ./fmdns-log:/var/log/bind
     ports:
       - ${HOST_IP}:53:53/udp
       - ${HOST_IP}:53:53/tcp
