@@ -9,3 +9,4 @@
 1. Complete initial log in and install *fmDNS*
 
 1. Within ~1 minute of finishing the setup the DNS client should joing the server.
+    * If the server does not show up run the following command: ```docker exec -it fmDNS-bind9 /entrypoint.sh```
