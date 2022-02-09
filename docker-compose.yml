@@ -1,6 +1,39 @@
 version: '2'
 services:
 
+
+  traefik:
+    image: "traefik:v2.6"
+    hostname: traefik
+    container_name: ${COMPOSE_PROJECT_NAME}-traefik
+    networks:
+      - frontend
+    volumes:
+      - "/etc/timezone:/etc/timezone:ro"
+      - "/etc/localtime:/etc/localtime:ro"
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik-data/traefik.yml:/traefik.yml:ro
+      - ./traefik-data/acme.json:/acme.json
+    ports:
+      - "80:80"
+      - "443:443"
+    stop_grace_period: 1m
+    restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+#    labels:
+#      - "traefik.enable=true"
+#     - "traefik.http.routers.traefik.entrypoints=web"
+#      - "traefik.http.routers.traefik.rule=Host(`traefik`)"
+#      - "traefik.http.routers.traefik.service=api@internal"
+#      - "traefik.http.middlewares.traefik-https-redirect.redirectscheme.scheme=https"
+#      - "traefik.http.routers.traefik.middlewares=traefik-https-redirect"
+#      - "traefik.http.routers.traefik-secure.entrypoints=webalt"
+#      - "traefik.http.routers.traefik-secure.rule=Host(`traefik`)"
+#      - "traefik.http.routers.traefik-secure.tls=true"
+#      - "traefik.http.routers.traefik-secure.tls.certresolver=resolver-http"
+#      - "traefik.http.routers.traefik-secure.service=api@internal"
+
   facilemanager:
     build:
       context: .
@@ -13,16 +46,29 @@ services:
     volumes:
       - "/etc/timezone:/etc/timezone:ro"
       - "/etc/localtime:/etc/localtime:ro"
-    #ports:
-    #  - 80:80
-    #  - 443:443
+#    ports:
+#      - 80:80
     stop_grace_period: 1m
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     environment:
       MYSQL_HOST: "${COMPOSE_PROJECT_NAME}-db"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MYSQL_USER: "${MYSQL_USER}"
       MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+    labels:
+      - "traefik.port=443"
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.facilemanager.entrypoints=web"
+      - "traefik.http.routers.facilemanager.rule=Host(`${fm_URL}`)"
+      - "traefik.http.middlewares.facilemanager-https-redirect.redirectscheme.scheme=https"
+      - "traefik.http.routers.facilemanager.middlewares=facilemanager-https-redirect"
+      - "traefik.http.routers.facilemanager-secure.entrypoints=websecure"
+      - "traefik.http.routers.facilemanager-secure.rule=Host(`${fm_URL}`)"
+      - "traefik.http.routers.facilemanager-secure.tls.certresolver=resolver-http"
+      - "traefik.http.routers.facilemanager-secure.tls=true"
     links:
       - mysql
 
@@ -40,6 +86,8 @@ services:
     #  - 3306:3306
     stop_grace_period: 1m
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
     environment:
       MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
@@ -62,12 +110,21 @@ services:
     ports:
       - ${fmDNS_External_IP}:53:53/udp
       - ${fmDNS_External_IP}:53:53/tcp
-    #  - 8053:80
+    #  - 80:80
     stop_grace_period: 1m
     restart: unless-stopped
+#    security_opt:
+#      - no-new-privileges:true
     environment:
       FACILE_MANAGER_HOST: ${fmDNS_Manager}
       FACILE_CLIENT_SERIAL_NUMBER: ${fmDNS_Serial}
+    labels:
+      - "traefik.port=80"
+      - "traefik.enable=true"
+      - "traefik.docker.network=frontend"
+      - "traefik.http.routers.fmdns.entrypoints=web"
+      - "traefik.http.routers.fmdns.rule=Host(`${fmDNS_URL}`)"
+      - "traefik.http.routers.fmdns.tls=false"
 
 volumes:
     mysql:

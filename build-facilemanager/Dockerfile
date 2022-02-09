@@ -15,3 +15,6 @@ RUN ln -s /usr/lib/x86_64-linux-gnu/libldap.so /usr/lib/libldap.so \
 
 COPY build-facilemanager/config.inc.php /var/www/html/
 COPY build-facilemanager/php.ini /usr/local/etc/php/php.ini
+COPY build-facilemanager/init.php.patch /var/www/html/fm-includes/
+
+RUN patch /var/www/html/fm-includes/init.php /var/www/html/fm-includes/init.php.patch
