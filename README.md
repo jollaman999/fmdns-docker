@@ -20,6 +20,7 @@ Secondary Goals:
 ## Pre-Requirments
 You must have a MySQL database ready for FM manager to connect to. If you do not, run the following for the simplest setup:
 
+```
 docker run -d \
 	--name MySQL_FM \
 	--mount type=bind,src=/path/to/persistant/storage,dst=/var/lib/mysql \
@@ -28,6 +29,7 @@ docker run -d \
 	-e MYSQL_USER=facileManager \
 	-e MYSQL_PASSWORD=<password> \
 	mysql/mysql-server
+```
 
 ## Running Manager Container
 
