@@ -11,6 +11,10 @@ Secondary Goals:
 ## Setup (facileManager and first fmDNS container)
 1. Clone this repo by running: ```git clone https://github.com/Mr-Mors/fmDNS-docker.git```
 
+1. Create acme.json file: ```touch traefik-data/acme.json```
+
+1. Set permissions on acme.json file: ```chmod 600 traefik-data/acme.json```
+
 1. Copy/Rename ```.env.example``` to ```.env```
 
 1. Edit the environments file and update to your needs. Explanation of flags in section below.
@@ -31,3 +35,5 @@ Secondary Goals:
 * fmDNS_Serial = The serial number for this instance of fmDNS. This needs to be unique on each instance.
 * fmDNS_External_IP = This is the IP docker will bind and forward to the fmDNS instance for port 53 TCP/UDP
 
+## Notes
+If you don't want to use LetsEncrypt, disable all the Traefik lines with "secure" or "https"
