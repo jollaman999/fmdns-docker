@@ -54,6 +54,7 @@ docker run -d \
 	-p <ip>:53:53/udp \
 	-e FACILE_MANAGER_HOST=<FM container hostname> \
 	-e FACILE_CLIENT_SERIAL_NUMBER=<serial number> \
+	fmDNS
 ```
 
 ## Notes
