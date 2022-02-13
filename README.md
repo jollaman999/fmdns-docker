@@ -13,9 +13,6 @@ Secondary Goals:
 * MYSQL_DATABASE = MySQL database name for FM to use
 * MYSQL_USER = MySQL username for FM to login with
 * MYSQL_PASSWORD = MySQL password for FM to login with
-* fm_URL = This is the external URL you plan to use to access the web management interface
-* fmDNS_Manager = The DNS name of the facileManager that fmDNS should use to find facileManager
-* fmDNS_Serial = The serial number for this instance of fmDNS. This needs to be unique on each instance
 
 ## Pre-Requirments
 You must have a MySQL database ready for FM manager to connect to. If you do not, run the following for the simplest setup:
@@ -31,7 +28,7 @@ docker run -d \
 	mysql/mysql-server
 ```
 
-## Running Manager Container
+## Running FM Container
 
 ```
 docker run -d \
@@ -43,22 +40,7 @@ docker run -d \
 	mecjay12/fm
 ```
 
-## Running DNS Container
-Note: I haven't tested this yet, YMMV. Must be built by hand from inside the build-fmDNS directory.
-
-```
-docker build -t fmDNS .
-docker run -d \
-	--name DNS \
-	-p <ip>:53:53 \
-	-p <ip>:53:53/udp \
-	-e FACILE_MANAGER_HOST=<FM container hostname> \
-	-e FACILE_CLIENT_SERIAL_NUMBER=<serial number> \
-	fmDNS
-```
-
 ## Notes
-* Within ~1 minute of finishing the setup, the DNS client should join the server.
-    * If the DNS client does not show up, run the following command: ```docker exec -it fmDNS-bind9 /entrypoint.sh``` replacing fmDNS-bind9 with your container name.
-* Binding the published ports of the DNS client to an IP are essential.
-    * Docker has a current bug where publishing port 53 without an IP binding will prevent the Docker server/sawrm nodes from doing DNS lookups
+* If you are considering adding a DNS container as well:
+	* Docker has a current bug where publishing port 53 without an IP binding will prevent Docker nodes from doing DNS lookups. Hostip bindings are not availible in Swarms.
+	* Docker Swarm is missing features that allow for static IPs on a container/service/task.
