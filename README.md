@@ -1,25 +1,22 @@
-# fmDNS-docker
+# facileManager-docker
 
-## Goal
+This project is not affiliated with WillyXJ/facileManager or facileManager.com. This is an entirely independent project to dockerize the service.
 
-The main goal of this project is to easy the entry of using fmDNS and to provide an option that uses docker.
+## facileManager Server
 
-Secondary Goals:
-* The both the facileManager container and the fmDNS container should be stateless. Date should only be kept in MySQL
-* Rebuilding a fmDNS container should reconnect to facileManager without user intervention and not create a duplicate
-
-## Environment Flags
+### Environment Flags
 * MYSQL_HOST = Hostnane of MySQL server or container
 * MYSQL_DATABASE = MySQL database name for FM to use
 * MYSQL_USER = MySQL username for FM to login with
 * MYSQL_PASSWORD = MySQL password for FM to login with
+* TZ = Timezone for more readable logs 			default UTC	# optional
 
-## Pre-Requirments
+### Pre-Requirments
 You must have a MySQL database ready for FM manager to connect to. If you do not, run the following for the simplest setup:
 
 ```
 docker run -d \
-	--name MySQL_FM \
+	--name MySQL_fM \
 	--mount type=bind,src=/path/to/persistant/storage,dst=/var/lib/mysql \
 	-e MYSQL_ROOT_PASSWORD=<password> \
 	-e MYSQL_DATABASE=facileManager \
@@ -28,19 +25,63 @@ docker run -d \
 	mysql/mysql-server
 ```
 
-## Running FM Container
+### Running fM Server Container
 
 ```
 docker run -d \
+	--restart=always \
 	--name FM \
 	-e MYSQL_HOST=MySQL_FM. \
 	-e MYSQL_DATABASE=facileManager \
 	-e MYSQL_USER=facileManager \
 	-e MYSQL_PASSWORD=<password> \
+	-e TZ="America/New_York" \ 
 	mecjay12/fm
 ```
 
+## fmDNS Client
+
+### Environment Flags
+* FACILE_MANAGER_HOST = Hostnane of fM server or container	default localhost
+* FACILE_CLIENT_SERIAL_NUMBER = Client serial number		default random number between 100000000 & 999999999
+* 	Without this, the client will reinstall every reboot and service could be inconsistant
+* FACILE_MANAGER_AUTHKEY = facileManager authkey		default "default"
+* FACILE_CLIENT_LOG_FILE = Path to log file					# optional
+* 	If you have a log file configured in Bind/fM, set this or else Bind will fail to start
+* TZ = Timezone for more readable logs 				default UTC	# optional
+
+### Running fMDNS Container
+
+```
+docker run -d \
+	--restart=always \
+	--name fmDNS \
+	-p 53:53 \
+	-p 53:53/udp \
+	-p 80:80 \					# Client uses http for update
+	-h fmDNS.exmaple.com \				# Optional but sets the client name in fM server on install
+	-e FACILE_MANAGER_HOST=FM./ \
+	-e FACILE_CLIENT_SERIAL_NUMBER=999999999 \
+	-e TZ="America/New_York" \
+	mecjay12/fmdns \
+	apache						# Optional, Docker logs will show Apache logs instead of Bind logs.
+```
+
 ## Notes
-* If you are considering adding a DNS container as well:
-	* Docker has a current bug where publishing port 53 without an IP binding will prevent Docker nodes from doing DNS lookups. Hostip bindings are not availible in Swarms.
-	* Docker Swarm is missing features that allow for static IPs on a container/service/task.
+
+* fMDNS client logs will show bind logs by default. To show all DNS requests in these logs add `querylog = yes` to Config -> Options in fM server.
+* In some situations, reverse proxies can prevent the server from recognizing a rebooting/reinstalling client. The fix is to add a macvlan/ipvlan network and IP to your fM server container for the clients to authenticate to directly. Ex.:
+```
+docker network create \
+	-d macvlan \
+	--subnet=192.168.0.0/24 \
+	--gateway=192.168.0.1 \
+	-o parent=eth0 \
+	--ip-range 192.168.2.240/29 \
+	macvlan
+docker network connect \
+	macvlan --ip 192.168.0.10 fM
+```
+* Some Linux distros ship with systemd-resolved which binds to port 53. There are two solutions to this:
+* 	Follow [these steps](https://www.linuxuprising.com/2020/07/ubuntu-how-to-free-up-port-53-used-by.html) to unbind the service for fmDNS.
+* 	Use a macvlan/ipvlan so the client listens on a different IP than the host. With this fix, the host won't be able to easily use the container for DNS.
