@@ -5,8 +5,8 @@ WORKDIR /src
 
 RUN	apt-get update \
 	&& apt-get -qqy install wget libldb-dev libldap2-dev ssh iputils-ping bind9-utils \
-	&& wget http://www.facilemanager.com/download/facilemanager-complete-$Version.tar.gz \
-	&& tar -xvf facilemanager-complete-$Version.tar.gz \
+	&& wget http://facilemanager.com/download/facilemanager-core-$Version.tar.gz \
+	&& tar -xvf facilemanager-core-$Version.tar.gz \
 	&& mv facileManager/server/* /var/www/html/ \
 	&& mkdir /fm_tmp/ \
 	&& chown -R www-data:www-data /fm_tmp/ \

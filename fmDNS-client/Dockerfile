@@ -2,11 +2,11 @@ FROM php:7.4-apache
 
 WORKDIR /src
 
-ENV	Version=4.3.0
+ENV	Version=5.2.1
 RUN	apt-get update \
 	&& apt-get -qqy install wget bind9 dnsutils sudo
-RUN	wget http://www.facilemanager.com/download/facilemanager-complete-$Version.tar.gz \
-	&& tar -xvf facilemanager-complete-$Version.tar.gz \
+RUN	wget http://facilemanager.com/download/module/fmdns-$Version.tar.gz \
+	&& tar -xvf fmdns-$Version.tar.gz \
 	&& mv facileManager/client/facileManager /usr/local \
 	&& ln -s /usr/local/facileManager/www /var/www/html/fM
 
