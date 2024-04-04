@@ -1,0 +1,56 @@
+services:
+  db:
+    container_name: jolla_dns_db
+    restart: always
+    build:
+      context: ./mariadb
+      dockerfile: Dockerfile
+    environment:
+      - MARIADB_ROOT_PASSWORD=fmAdmin1234!@#$
+      - MARIADB_DATABASE=fm
+      - MARIADB_USER=fmadmin
+      - MARIADB_PASSWORD=fmAdmin1234!@#$
+      - TZ=Asia/Seoul
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./db:/var/lib/mysql
+
+  fm:
+    container_name: jolla_dns_fm
+    restart: always
+    build:
+      context: ./facileManager-server
+      dockerfile: Dockerfile
+    image: jolla_dns_fm
+    environment:
+      - MYSQL_HOST=db
+      - MYSQL_DATABASE=fm
+      - MYSQL_USER=fmadmin
+      - MYSQL_PASSWORD=fmAdmin1234!@#$
+      - TZ=Asia/Seoul
+    ports:
+      - "5081:80"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      - db
+      - fmdns
+
+  fmdns:
+    container_name: jolla_dns_fmdns
+    restart: always
+    build:
+      context: ./fmDNS-client
+      dockerfile: Dockerfile
+    image: jolla_dns_fmdns
+    hostname: ns.jolla.com
+    environment:
+      - FACILE_MANAGER_HOST=fm/
+      - FACILE_CLIENT_SERIAL_NUMBER=20240404
+      - TZ=Asia/Seoul
+    ports:
+      - "5080:80"
+      - "53:53"
+      - "53:53/udp"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro

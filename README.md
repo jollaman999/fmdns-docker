@@ -2,6 +2,63 @@
 
 This project is not affiliated with WillyXJ/facileManager or facileManager.com. This is an entirely independent project to dockerize the service.
 
+## Automation Quick start
+* Configure variables in `init_fmDNS.sh` script file.
+```
+FM_SERVER_IP="10.0.0.1"
+FM_SERVER_PORT="5081"
+FM_USERNAME="admin"
+FM_PASSWORD="fmAdmin1234!@#$"
+FM_USEREMAIL="admin@jollaman999.com"
+
+FACILE_CLIENT_SERIAL_NUMBER="20240404"
+
+DOMAIN_NAME="test.com"
+SUB_DOMAIN_A_RECORD="sub"
+SUB_DOMAIN_A_RECORD_IP="172.16.0.100"
+
+ENABLE_EXTERNAL_NAMESERVERS="false"
+# EXTERNAL_NAMESERVER_1="1.1.1.1"
+# EXTERNAL_NAMESERVER_2="1.0.0.1"
+```
+
+* Start and initialize DNS server with the specified domain in `init_fmDNS.sh` script file.
+```
+./init_fmDNS.sh
+```
+
+* Setting your DNS server from client.
+```
+Primary: {FM_SERVER_IP}
+Secondary: 1.1.1.1
+```
+
+* Check if your domain is working.
+```
+> dig sub.test.com
+
+; <<>> DiG 9.11.9 <<>> sub.test.com
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 24009
+;; flags: qr aa rd; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+;; WARNING: recursion requested but not available
+
+;; OPT PSEUDOSECTION:
+; EDNS: version: 0, flags:; udp: 1232
+; COOKIE: 4776669b7772980d01000000660e818f13ba889d02a2015f (good)
+;; QUESTION SECTION:
+;sub.test.com.            IN      A
+
+;; ANSWER SECTION:
+sub.test.com.     86400   IN      A       172.16.0.100
+
+;; Query time: 0 msec
+;; SERVER: 10.0.0.1#53(10.0.0.1)
+;; WHEN: Thu Apr 04 19:31:43     2024
+;; MSG SIZE  rcvd: 91
+```
+
 ## facileManager Server
 
 ### Environment Flags
@@ -11,33 +68,6 @@ This project is not affiliated with WillyXJ/facileManager or facileManager.com. 
 * MYSQL_PASSWORD = MySQL password for FM to login with
 * TZ = Timezone for more readable logs 			default UTC	# optional
 
-### Pre-Requirments
-You must have a MySQL database ready for FM manager to connect to. If you do not, run the following for the simplest setup:
-
-```
-docker run -d \
-	--name MySQL_fM \
-	--mount type=bind,src=/path/to/persistant/storage,dst=/var/lib/mysql \
-	-e MYSQL_ROOT_PASSWORD=<password> \
-	-e MYSQL_DATABASE=facileManager \
-	-e MYSQL_USER=facileManager \
-	-e MYSQL_PASSWORD=<password> \
-	mysql/mysql-server
-```
-
-### Running fM Server Container
-
-```
-docker run -d \
-	--restart=always \
-	--name FM \
-	-e MYSQL_HOST=MySQL_FM. \
-	-e MYSQL_DATABASE=facileManager \
-	-e MYSQL_USER=facileManager \
-	-e MYSQL_PASSWORD=<password> \
-	-e TZ="America/New_York" \ 
-	mecjay12/fm
-```
 
 ## fmDNS Client
 
@@ -49,23 +79,6 @@ docker run -d \
 * FACILE_CLIENT_LOG_FILE = Path to log file					# optional
 * 	If you have a log file configured in Bind/fM, set this or else Bind will fail to start
 * TZ = Timezone for more readable logs 				default UTC	# optional
-
-### Running fMDNS Container
-
-```
-docker run -d \
-	--restart=always \
-	--name fmDNS \
-	-p 53:53 \
-	-p 53:53/udp \
-	-p 80:80 \					# Client uses http for update
-	-h fmDNS.exmaple.com \				# Optional but sets the client name in fM server on install
-	-e FACILE_MANAGER_HOST=FM./ \
-	-e FACILE_CLIENT_SERIAL_NUMBER=999999999 \
-	-e TZ="America/New_York" \
-	mecjay12/fmdns \
-	apache						# Optional, Docker logs will show Apache logs instead of Bind logs.
-```
 
 ## Notes
 

@@ -1,4 +1,7 @@
 .env
+db
 mysql-data
 fmdns-log
 traefik-data/acme.json 
+cookie
+curl_output

@@ -1,7 +1,10 @@
-FROM php:7.4-apache
+FROM php:8.2-apache
 
-ENV Version=4.4.0
+ENV Version=4.6.1
 WORKDIR /src
+
+RUN sed -i 's@deb.debian.org@mirror.kakao.com@g' /etc/apt/sources.list.d/debian.sources
+RUN sed -i 's@mirror.kakao.com/debian-security@deb.debian.org/debian-security@g' /etc/apt/sources.list.d/debian.sources
 
 RUN	apt-get update \
 	&& apt-get -qqy install wget libldb-dev libldap2-dev ssh iputils-ping bind9-utils \

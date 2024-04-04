@@ -1,9 +1,12 @@
-FROM php:7.4-apache
+FROM php:8.2-apache
 
 WORKDIR /src
 
-ENV	DNS_Version=5.3.0
-ENV	Core_Version=4.4.0
+RUN sed -i 's@deb.debian.org@mirror.kakao.com@g' /etc/apt/sources.list.d/debian.sources
+RUN sed -i 's@mirror.kakao.com/debian-security@deb.debian.org/debian-security@g' /etc/apt/sources.list.d/debian.sources
+
+ENV	DNS_Version=6.0.3
+ENV	Core_Version=4.6.1
 RUN	apt-get update \
 	&& apt-get -qqy install wget bind9 dnsutils sudo
 RUN	wget http://facilemanager.com/download/module/fmdns-$DNS_Version.tar.gz \
